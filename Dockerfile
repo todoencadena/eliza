@@ -38,10 +38,10 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies
-RUN pnpm install --no-frozen-lockfile
+RUN pnpm install --no-frozen-lockfile --forc
 
 # Build the project
-RUN pnpm run build && pnpm prune --prod
+RUN pnpm run build --force && pnpm prune --prod
 
 # Final runtime image
 FROM node:23.3.0-slim
