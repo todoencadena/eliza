@@ -42,7 +42,7 @@ export class TelegramClient {
     }
 
     private async initializeBot(): Promise<void> {
-        this.bot.launch({ dropPendingUpdates: true });
+        await this.bot.launch({ dropPendingUpdates: true });
         elizaLogger.log(
             "✨ Telegram bot successfully launched and is running!"
         );
@@ -197,8 +197,7 @@ export class TelegramClient {
 
     public async stop(): Promise<void> {
         elizaLogger.log("Stopping Telegram bot...");
-        //await 
-            this.bot.stop();
+        await this.bot.stop();
         elizaLogger.log("Telegram bot stopped");
     }
 }

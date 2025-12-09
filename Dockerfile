@@ -38,7 +38,7 @@ WORKDIR /app
 COPY . .
 
 # Install dependencies
-RUN pnpm install --no-frozen-lockfile --forc
+RUN pnpm install --no-frozen-lockfile --force
 
 # Build the project
 RUN pnpm run build --force && pnpm prune --prod
@@ -76,4 +76,6 @@ COPY --from=builder /app/characters ./characters
 EXPOSE 3000 5173
 
 # Command to start the application
-CMD ["sh", "-c", "pnpm start & pnpm start:client"]
+# Run pnpm start in foreground to keep the container alive
+# The bot must run as the main process for proper signal handling
+CMD ["pnpm", "start"]
