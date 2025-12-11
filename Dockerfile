@@ -29,5 +29,7 @@ RUN pnpm --filter "@elizaos/plugin-node" build || true
 
 EXPOSE 3000
 
-# Start the bot with the character file
-CMD ["pnpm", "start", "--", "--character=characters/criollo.character.json"]
+WORKDIR /app/agent
+
+# Start the bot directly with the character file
+CMD ["node", "--loader", "ts-node/esm", "src/index.ts", "--character=../characters/criollo.character.json"]
