@@ -4,7 +4,7 @@
     "main": "src/index.ts",
     "type": "module",
     "scripts": {
-        "start": "node --loader ts-node/esm src/index.ts",
+        "start": "node --loader ts-node/esm src/index.ts --character=../characters/criollo.character.json",
         "dev": "node --loader ts-node/esm src/index.ts",
         "check-types": "tsc --noEmit"
     },
