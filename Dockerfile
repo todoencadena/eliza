@@ -16,8 +16,38 @@ WORKDIR /app
 # Copy everything (including pre-compiled dist folders)
 COPY . .
 
-# Install dependencies - this creates the proper symlinks
-RUN pnpm install --no-frozen-lockfile
+# Install dependencies
+RUN pnpm install --no-frozen-lockfile || true
+
+# Manually copy dist folders to fix symlink issues
+RUN for pkg in packages/client-*/; do \
+    name=$(basename $pkg); \
+    target="agent/node_modules/@elizaos/$name/dist"; \
+    if [ -d "$pkg/dist" ]; then \
+        mkdir -p "agent/node_modules/@elizaos/$name"; \
+        cp -r "$pkg/dist" "$target" 2>/dev/null || true; \
+    fi; \
+done
+
+# Also copy adapter dist folders
+RUN for pkg in packages/adapter-*/; do \
+    name=$(basename $pkg); \
+    target="agent/node_modules/@elizaos/$name/dist"; \
+    if [ -d "$pkg/dist" ]; then \
+        mkdir -p "agent/node_modules/@elizaos/$name"; \
+        cp -r "$pkg/dist" "$target" 2>/dev/null || true; \
+    fi; \
+done
+
+# Copy core and plugin dist folders
+RUN for pkg in packages/core packages/plugin-*/; do \
+    name=$(basename $pkg); \
+    target="agent/node_modules/@elizaos/$name/dist"; \
+    if [ -d "$pkg/dist" ]; then \
+        mkdir -p "agent/node_modules/@elizaos/$name"; \
+        cp -r "$pkg/dist" "$target" 2>/dev/null || true; \
+    fi; \
+done
 
 EXPOSE 3000
 
