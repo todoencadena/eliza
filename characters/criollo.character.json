@@ -8,8 +8,5 @@
     "voice": {
       "model": ""
     }
-  },
-  "secrets": {
-    "TELEGRAM_BOT_TOKEN": "7559085543:AAFVgXJh15O0ZQPsHEpMr2V3z"
   }
 }

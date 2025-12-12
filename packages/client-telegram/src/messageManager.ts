@@ -1045,9 +1045,10 @@ export class MessageManager {
         });
 
         if (!response) {
-            console.error("❌ No response from generateMessageResponse");
+            elizaLogger.error("❌ No response from generateMessageResponse - check your API key and model provider settings");
             return null;
         }
+        elizaLogger.debug(`[Telegram] Generated response: ${response.text?.substring(0, 100)}...`);
 
         await this.runtime.databaseAdapter.log({
             body: { message, context, response },
@@ -1064,6 +1065,8 @@ export class MessageManager {
         if (!ctx.message || !ctx.from) {
             return; // Exit if no message or sender info
         }
+
+        elizaLogger.info(`[Telegram] 📨 Received message from @${ctx.from.username || ctx.from.id} in chat ${ctx.chat?.type}: "${('text' in ctx.message ? ctx.message.text : '[non-text]')?.substring(0, 50)}"`);
 
         this.lastChannelActivity[ctx.chat.id.toString()] = Date.now();
 
@@ -1321,6 +1324,7 @@ export class MessageManager {
 
             // Decide whether to respond
             const shouldRespond = await this._shouldRespond(message, state);
+            elizaLogger.debug(`[Telegram] shouldRespond result: ${shouldRespond} for message from ${ctx.from?.username || ctx.from?.id}`);
 
             // Send response in chunks
             const callback: HandlerCallback = async (content: Content) => {
@@ -1387,7 +1391,10 @@ export class MessageManager {
                     context
                 );
 
-                if (!responseContent || !responseContent.text) return;
+                if (!responseContent || !responseContent.text) {
+                    elizaLogger.warn("[Telegram] No response content generated - responseContent:", responseContent);
+                    return;
+                }
 
                 // Execute callback to send messages and log memories
                 const responseMessages = await callback(responseContent);
