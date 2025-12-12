@@ -16,6 +16,9 @@ WORKDIR /app
 # Copy everything
 COPY . .
 
+# Verify character file exists
+RUN ls -la /app/characters/ && cat /app/characters/criollo.character.json
+
 # Install dependencies
 RUN pnpm install --no-frozen-lockfile || true
 
@@ -32,4 +35,4 @@ EXPOSE 3000
 WORKDIR /app/agent
 
 # Start the bot directly with the character file
-CMD ["node", "--loader", "ts-node/esm", "src/index.ts", "--character=../characters/criollo.character.json"]
+CMD ["node", "--loader", "ts-node/esm", "src/index.ts", "--character=/app/characters/criollo.character.json"]
