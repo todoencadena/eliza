@@ -277,10 +277,13 @@ async function startAgent(
 ): Promise<AgentRuntime> {
     let db: IDatabaseAdapter & IDatabaseCacheAdapter;
     try {
+        elizaLogger.info(`[DEBUG] Starting agent for ${character.name}`);
         character.id ??= stringToUuid(character.name);
         character.username ??= character.name;
 
         const token = getTokenForProvider(character.modelProvider, character);
+        elizaLogger.info(`[DEBUG] Got token for provider: ${character.modelProvider}, token exists: ${!!token}`);
+
         const dataDir = path.join(__dirname, "../data");
 
         if (!fs.existsSync(dataDir)) {
@@ -289,6 +292,7 @@ async function startAgent(
 
         db = initializeDatabase(dataDir) as IDatabaseAdapter & IDatabaseCacheAdapter;
         await db.init();
+        elizaLogger.info(`[DEBUG] Database initialized`);
 
         const cache = initializeCache(
             process.env.CACHE_STORE ?? CacheStore.DATABASE,
@@ -296,10 +300,17 @@ async function startAgent(
             "",
             db
         );
+        elizaLogger.info(`[DEBUG] Cache initialized`);
 
         const runtime: AgentRuntime = await createAgent(character, db, cache, token);
+        elizaLogger.info(`[DEBUG] Agent created, now initializing...`);
+
         await runtime.initialize();
+        elizaLogger.info(`[DEBUG] Runtime initialized, now starting clients...`);
+
         runtime.clients = await initializeClients(character, runtime);
+        elizaLogger.info(`[DEBUG] Clients initialized: ${Object.keys(runtime.clients)}`);
+
         directClient.registerAgent(runtime);
         elizaLogger.debug(`Started ${character.name} as ${runtime.agentId}`);
         return runtime;
