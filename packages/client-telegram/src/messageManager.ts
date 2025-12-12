@@ -847,7 +847,7 @@ export class MessageManager {
                 if (ourMessageCount > 2) {
                     const responseChance = Math.pow(0.5, ourMessageCount - 2);
                     if (Math.random() > responseChance) {
-                        return;
+                        return false;
                     }
                 }
             }
