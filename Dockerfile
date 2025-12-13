@@ -1,4 +1,5 @@
 # Use a specific Node.js version for better reproducibility
+# Build timestamp: 2025-12-13T18:30:00 - Force fresh build
 FROM node:23.3.0-slim AS builder
 
 # Install pnpm globally and necessary build tools
