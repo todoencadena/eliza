@@ -722,27 +722,43 @@ export async function initializeClients(
     character: Character,
     runtime: IAgentRuntime,
 ) {
-    // each client can only register once
-    // and if we want two we can explicitly support it
+    elizaLogger.info("🔧 ====== INITIALIZING CLIENTS (NEW CODE v2) ======");
+
     const clients: Record<string, any> = {};
     const clientTypes: string[] =
         character.clients?.map((str) => str.toLowerCase()) || [];
-    elizaLogger.log("initializeClients", clientTypes, "for", character.name);
+
+    elizaLogger.info("📋 Client types to initialize:", clientTypes);
+    elizaLogger.info("📋 Character name:", character.name);
+    elizaLogger.info("🔑 TELEGRAM_BOT_TOKEN from env:", process.env.TELEGRAM_BOT_TOKEN ? "EXISTS" : "MISSING");
 
     // Start Auto Client if "auto" detected as a configured client
-    if (clientTypes.includes(Clients.AUTO)) {
+    if (clientTypes.includes("auto")) {
         const autoClient = await AutoClientInterface.start(runtime);
         if (autoClient) clients.auto = autoClient;
     }
 
-    if (clientTypes.includes(Clients.DISCORD)) {
+    if (clientTypes.includes("discord")) {
         const discordClient = await DiscordClientInterface.start(runtime);
         if (discordClient) clients.discord = discordClient;
     }
 
-    if (clientTypes.includes(Clients.TELEGRAM)) {
-        const telegramClient = await TelegramClientInterface.start(runtime);
-        if (telegramClient) clients.telegram = telegramClient;
+    // TELEGRAM - using string directly instead of Clients.TELEGRAM
+    if (clientTypes.includes("telegram")) {
+        elizaLogger.info("📱 ====== STARTING TELEGRAM CLIENT ======");
+        try {
+            const telegramClient = await TelegramClientInterface.start(runtime);
+            if (telegramClient) {
+                clients.telegram = telegramClient;
+                elizaLogger.info("✅ Telegram client started successfully!");
+            } else {
+                elizaLogger.error("❌ Telegram client returned null/undefined");
+            }
+        } catch (error) {
+            elizaLogger.error("❌ TELEGRAM CLIENT FAILED TO START:", error);
+        }
+    } else {
+        elizaLogger.warn("⚠️ 'telegram' NOT found in clientTypes:", clientTypes);
     }
 
     if (clientTypes.includes(Clients.TWITTER)) {
@@ -1295,34 +1311,55 @@ const hasValidRemoteUrls = () =>
     process.env.REMOTE_CHARACTER_URLS.startsWith("http");
 
 const startAgents = async () => {
+    elizaLogger.info("🚀 ====== STARTING AGENTS (NEW CODE v2) ======");
+
     const directClient = new DirectClient();
     let serverPort = Number.parseInt(settings.SERVER_PORT || "3000");
-    const args = parseArguments();
-    const charactersArg = args.characters || args.character;
 
-    // Load criollo character by default
-    let characters = await loadCharacters("characters/criollo.character.json");
-    elizaLogger.info("Loaded criollo character with clients:", characters[0]?.clients);
+    // HARDCODED CHARACTER - NO EXTERNAL FILES NEEDED
+    const criolloCharacter: Character = {
+        id: stringToUuid("criollo"),
+        name: "Criollo",
+        username: "criollo",
+        clients: ["telegram"],
+        modelProvider: ModelProviderName.ANTHROPIC,
+        settings: {
+            secrets: {},
+            voice: { model: "" }
+        },
+        plugins: [],
+        bio: ["I'm Criollo, a rescue dog helping other animals find homes."],
+        lore: ["We work with foundations to help pets find permanent homes."],
+        knowledge: [],
+        messageExamples: [],
+        postExamples: [],
+        topics: ["animal rescue", "pet adoption"],
+        style: {
+            all: ["Friendly and helpful"],
+            chat: ["Conversational"],
+            post: ["Informative"]
+        },
+        adjectives: ["friendly", "helpful"],
+        people: []
+    };
 
-    if (process.env.IQ_WALLET_ADDRESS && process.env.IQSOlRPC) {
-        characters = await loadCharacterFromOnchain();
-    }
+    elizaLogger.info("📋 Character created:", criolloCharacter.name);
+    elizaLogger.info("📱 Character clients:", criolloCharacter.clients);
+    elizaLogger.info("🔑 TELEGRAM_BOT_TOKEN exists:", !!process.env.TELEGRAM_BOT_TOKEN);
 
-    const notOnchainJson = !onchainJson || onchainJson == "null";
-
-    if ((notOnchainJson && charactersArg) || hasValidRemoteUrls()) {
-        characters = await loadCharacters(charactersArg);
-    }
+    let characters = [criolloCharacter];
 
     // Normalize characters for injectable plugins
     characters = await Promise.all(characters.map(normalizeCharacter));
 
     try {
         for (const character of characters) {
+            elizaLogger.info(`🏃 Starting agent for: ${character.name}`);
             await startAgent(character, directClient);
+            elizaLogger.info(`✅ Agent started for: ${character.name}`);
         }
     } catch (error) {
-        elizaLogger.error("Error starting agents:", error);
+        elizaLogger.error("❌ Error starting agents:", error);
     }
 
     // Find available port

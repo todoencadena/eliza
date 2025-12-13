@@ -1,6 +1,10 @@
 # Use a specific Node.js version for better reproducibility
-# Build timestamp: 2025-12-13T18:30:00 - Force fresh build
+# Build timestamp: 2025-12-13T18:45:00 - Force fresh build v2
+# RADICAL FIX - Telegram bot hardcoded character
 FROM node:23.3.0-slim AS builder
+
+# Force cache invalidation
+ARG CACHEBUST=2
 
 # Install pnpm globally and necessary build tools
 RUN npm install -g pnpm@9.4.0 && \
