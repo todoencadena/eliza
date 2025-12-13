@@ -1299,7 +1299,10 @@ const startAgents = async () => {
     let serverPort = Number.parseInt(settings.SERVER_PORT || "3000");
     const args = parseArguments();
     const charactersArg = args.characters || args.character;
-    let characters = [defaultCharacter];
+
+    // Load criollo character by default
+    let characters = await loadCharacters("characters/criollo.character.json");
+    elizaLogger.info("Loaded criollo character with clients:", characters[0]?.clients);
 
     if (process.env.IQ_WALLET_ADDRESS && process.env.IQSOlRPC) {
         characters = await loadCharacterFromOnchain();
