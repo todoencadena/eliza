@@ -1296,7 +1296,7 @@ const hasValidRemoteUrls = () =>
 
 const startAgents = async () => {
     const directClient = new DirectClient();
-    let serverPort = Number.parseInt(settings.SERVER_PORT || "3000");
+    let serverPort = Number.parseInt(process.env.PORT || settings.SERVER_PORT || "3000");
     const args = parseArguments();
     const charactersArg = args.characters || args.character;
     let characters = [defaultCharacter];
